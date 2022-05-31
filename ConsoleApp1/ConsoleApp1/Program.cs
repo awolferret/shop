@@ -11,22 +11,22 @@ namespace ConsoleApp1
             shop.Working();
         }
     }
-
     class Shop
     {
-        private bool _isWorking = true;
-        private List<Product> _products = new List<Product>();
         Player player = new Player();
+        private bool _isWorking = true;
+        public List<Product> Products = new List<Product>();
 
         public void Working()
         {
             AddToAssortment();
+            player.AddToBallance();
 
             while (_isWorking)
             {
                 Console.WriteLine("1. Посмотреть ассортимент");
-                Console.WriteLine("2. Посмотреть свои инвентарь");
-                Console.WriteLine("3. Купить предмет");
+                Console.WriteLine("2. Купить предмет");
+                Console.WriteLine("3. Посмотреть свои инвентарь");
                 Console.WriteLine("4. Выход");
                 string input = Console.ReadLine();
 
@@ -36,93 +36,141 @@ namespace ConsoleApp1
                         ShowAssortment();
                         break;
                     case "2":
-                        
+                        Buy();
                         break;
-                }
-            }
-        }
-        public void ShowAssortment()
-        {
-            if (_products.Count > 0)
-            {
-                for (int i = 0; i < _products.Count; i++)
-                {
-                    Console.Write($"{i + 1}.");
-                    _products[i].ShowProductInfo();
+                    case "3":
+                        ShowInventory();
+                        break;
+                    case "4":
+                        Exit();
+                        break;
+                    default:
+                        Console.WriteLine("Некорректный ввод");
+                        break;
                 }
             }
         }
         public void AddToAssortment()
         {
-            _products.Add(new Product("Lamp oil", 100, 3));
-            _products.Add(new Product("Rope", 150, 2));
-            _products.Add(new Product("Bomb", 200, 5));
+            Products.Add(new Product("Lamp Oil", 100));
+            Products.Add(new Product("Rope", 150));
+            Products.Add(new Product("Bomb", 200));
         }
 
-        public void BuyProduct()
+        public void ShowAssortment()
         {
-            Console.WriteLine("Введите номер товара который хотите купить");
-            string input = Console.ReadLine();
-            int number;
-
-            if (int.TryParse(input, out number) && number <= _products.Count)
+            if (Products.Count > 0)
             {
-                Player.Inventory.Add();
+                for (int i = 0; i < Products.Count; i++)
+                {
+                    Console.Write($"{i + 1}.");
+                    Products[i].ShowProductInfo();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Нечего предложить");
             }
 
+            ClearConsole();
+        }
+
+        public void ShowInventory()
+        {
+            if (player.inventory.Count > 0)
+            {
+                for (int i = 0; i < player.inventory.Count; i++)
+                {
+                    Console.Write($"{i + 1}.");
+                    player.inventory[i].ShowInventoryProductInfo();
+                }
+                player.ShowMoney();
+            }
+            else
+            {
+                Console.WriteLine($"В инвентаре пусто, но у вас есть {player.Money} рублей");
+            }
+
+            ClearConsole();
+        }
+
+        public void Buy()
+        {
+            Console.WriteLine("Какой товар вы хотите купить?");
+            string input = Console.ReadLine();
+            int number;
+            int.TryParse(input, out number);
+
+            if (player.Money >= Products[number - 1].ProductPrice)
+            {
+                BuyProduct(number);
+                player.ChangeBallance(Products[number - 1].ProductPrice);
+            }
+            else
+            {
+                Console.WriteLine("Я не даю кредиты, возвращайся когда станешь богаче");
+            }
+
+            ClearConsole();
+        }
+
+        public void BuyProduct(int number)
+        {
+            player.inventory.Add(new Product(Products[number-1].ProductName, Products[number-1].ProductPrice));
+            Products.RemoveAt(number-1);
+        }
+
+        public void ClearConsole()
+        {
+            Console.ReadKey();
+            Console.Clear();
+        }
+
+        public void Exit()
+        {
+            _isWorking = false;
         }
     }
-
     class Product
     {
-        private string _productName;
-        private int _productPrice;
-        private int _productAmount;
+        public string ProductName { get; private set; }
+        public int ProductPrice { get; private set; }
 
-        public Product(string productName,int productPrice,int productAmount)
+        public Product(string productName, int productPrice)
         {
-            _productName = productName;
-            _productPrice = productPrice;
-            _productAmount = productAmount;
+            ProductName = productName;
+            ProductPrice = productPrice;
         }
 
         public void ShowProductInfo()
         {
-            Console.WriteLine($"Предмет {_productName} по цене {_productPrice} рублей в колличестве {_productAmount}");
+            Console.WriteLine($"{ProductName} по цене {ProductPrice}");
+        }
+
+        public void ShowInventoryProductInfo()
+        {
+            Console.WriteLine($"{ProductName}");
         }
     }
 
     class Player
     {
-        private int _money;
-        public List<Player> Inventory = new List<Player>();
-        //public Player(int money)
-        //{
-        //    _money = money;
-        //}
+        public int Money { get; private set; }
+        public List<Product> inventory = new List<Product>();
 
-        public void AddToInventory()
+        public void AddToBallance()
         {
-            
+            Money = 500;
         }
 
-        public void ShowPlayerMoney()
+        public void ChangeBallance(int productPrice)
         {
-            Console.WriteLine($"У вас {_money} рублей");
+            Money -= productPrice;
         }
 
-        public void ShowPlayerProduct()
+        public void ShowMoney()
         {
-            
-        }
-
-        public void ShowPlayerInvetory()
-        {
-            for (int i = 0; i < Inventory.Count; i++)
-            {
-                Console.Write($"{i+1}.");
-                Inventory[i].ShowPlayerProduct();
-            }
+            Console.WriteLine($"У вас {Money} рублей");
         }
     }
 }
