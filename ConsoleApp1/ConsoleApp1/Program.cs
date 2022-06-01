@@ -7,28 +7,27 @@ namespace ConsoleApp1
     {
         static void Main()
         {
-            Shop shop = new Shop();
-            shop.Work();
+            Merchant merchant = new Merchant();
+            merchant.Work();
         }
     }
 
-    class Perent
+    class Inventory
     {
-        private List<Product> list = new List<Product>();
+        protected List<Product> _products = new List<Product>();
     }
 
-    class Shop
+    class Merchant : Inventory
     {
         public Player player = new Player();
         private bool _isWorking = true;
-        private List<Product> _products = new List<Product>();
 
         public void Work()
         {
             AddToAssortment();
             player.AddToBallance();
 
-            while (_isWorking == true)
+            while (_isWorking)
             {
                 Console.WriteLine("1. Посмотреть ассортимент");
                 Console.WriteLine("2. Купить предмет");
@@ -101,8 +100,6 @@ namespace ConsoleApp1
             ClearConsole();
         }
 
-
-
         public void ClearConsole()
         {
             Console.ReadKey();
@@ -136,11 +133,9 @@ namespace ConsoleApp1
         }
     }
 
-    class Player
+    class Player : Inventory
     {
-        public Shop shop = new Shop();
         public int Money { get; private set; }
-        private List<Product> inventory = new List<Product>();
 
         public void AddToBallance()
         {
@@ -159,12 +154,12 @@ namespace ConsoleApp1
 
         public void ShowInventory()
         {
-            if (inventory.Count > 0)
+            if (_products.Count > 0)
             {
-                for (int i = 0; i < inventory.Count; i++)
+                for (int i = 0; i < _products.Count; i++)
                 {
                     Console.Write($"{i + 1}.");
-                    inventory[i].ShowInventoryProductInfo();
+                    _products[i].ShowInventoryProductInfo();
                 }
                 ShowMoney();
             }
@@ -173,12 +168,12 @@ namespace ConsoleApp1
                 Console.WriteLine($"В инвентаре пусто, но у вас есть {Money} рублей");
             }
 
-            shop.ClearConsole();
+            
         }
 
         public void BuyProduct(int number,List<Product> _products)
         {
-            inventory.Add(new Product(_products[number - 1].ProductName, _products[number - 1].ProductPrice));
+            this._products.Add(new Product(_products[number - 1].ProductName, _products[number - 1].ProductPrice));
             _products.RemoveAt(number - 1);
         }
     }
